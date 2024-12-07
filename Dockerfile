@@ -1,12 +1,13 @@
-# Specify a base image
-FROM node:alpine
-
-WORKDIR /usr/app
-
-# Install some dependencies
-COPY ./package.json ./
+FROM node:alpine AS build
+WORKDIR '/app'
+COPY package.json .
 RUN npm install
-COPY ./ ./
+COPY webpack.config.js .
+COPY SourceCode SourceCode
+RUN npm run build
 
-# Default command
-CMD ["npm", "start"]
+FROM node:alpine
+WORKDIR '/app'
+COPY --from=build /app/build /app/build
+EXPOSE 8080
+CMD ["node","/app/build/index.js"]
